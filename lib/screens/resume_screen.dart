@@ -12,9 +12,9 @@ class ResumeScreen extends StatelessWidget {
       appBar: AppBar(
         title: Text(
           'Professional Resume',
-          style: Theme.of(context).textTheme.titleLarge?.copyWith(
-            fontWeight: FontWeight.w700,
-          ),
+          style: Theme.of(
+            context,
+          ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700),
         ),
         actions: [
           Container(
@@ -80,9 +80,9 @@ class ResumeScreen extends StatelessWidget {
             delay: const Duration(milliseconds: 200),
             child: Text(
               AppConstants.name,
-              style: Theme.of(context).textTheme.displaySmall?.copyWith(
-                fontWeight: FontWeight.w700,
-              ),
+              style: Theme.of(
+                context,
+              ).textTheme.displaySmall?.copyWith(fontWeight: FontWeight.w700),
               textAlign: TextAlign.center,
             ),
           ),
@@ -129,17 +129,13 @@ class ResumeScreen extends StatelessWidget {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Icon(
-          icon,
-          size: 16,
-          color: AppTheme.primaryColor,
-        ),
+        Icon(icon, size: 16, color: AppTheme.primaryColor),
         const SizedBox(width: 8),
         Text(
           text,
-          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-            fontWeight: FontWeight.w500,
-          ),
+          style: Theme.of(
+            context,
+          ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w500),
         ),
       ],
     );
@@ -166,17 +162,116 @@ class ResumeScreen extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'Professional Experience',
-            style: Theme.of(context).textTheme.displaySmall?.copyWith(
-              color: Theme.of(context).primaryColor,
-            ),
+          Row(
+            children: [
+              Container(
+                width: 4,
+                height: 32,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [AppTheme.primaryColor, AppTheme.accentColor],
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                  ),
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Text(
+                  'Professional Experience',
+                  style: Theme.of(context).textTheme.displaySmall?.copyWith(
+                    color: AppTheme.primaryColor,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+            ],
           ),
-          const SizedBox(height: 16),
-          ...AppConstants.experience.map(
-            (exp) => Padding(
-              padding: const EdgeInsets.only(bottom: 20),
-              child: _buildExperienceItem(
+          const SizedBox(height: 32),
+          _buildTimeline(context),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTimeline(BuildContext context) {
+    return Column(
+      children: [
+        for (int index = 0; index < AppConstants.experience.length; index++)
+          _buildTimelineItem(
+            context,
+            AppConstants.experience[index],
+            index,
+            index == AppConstants.experience.length - 1,
+          ),
+      ],
+    );
+  }
+
+  Widget _buildTimelineItem(
+    BuildContext context,
+    Map<String, dynamic> exp,
+    int index,
+    bool isLast,
+  ) {
+    return IntrinsicHeight(
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Timeline line and dot
+          Column(
+            children: [
+              Container(
+                width: 20,
+                height: 20,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [AppTheme.primaryColor, AppTheme.accentColor],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  shape: BoxShape.circle,
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppTheme.primaryColor.withOpacity(0.3),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: const Center(
+                  child: Icon(
+                    Icons.work_rounded,
+                    color: Colors.white,
+                    size: 12,
+                  ),
+                ),
+              ),
+              if (!isLast)
+                Container(
+                  width: 2,
+                  height: 120,
+                  margin: const EdgeInsets.symmetric(vertical: 8),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [
+                        AppTheme.primaryColor.withOpacity(0.6),
+                        AppTheme.primaryColor.withOpacity(0.2),
+                      ],
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                    ),
+                  ),
+                ),
+            ],
+          ),
+          const SizedBox(width: 24),
+          // Content
+          Expanded(
+            child: Container(
+              margin: const EdgeInsets.only(bottom: 32),
+              child: _buildExperienceCard(
                 context,
                 exp['position'] as String,
                 exp['company'] as String,
@@ -190,16 +285,31 @@ class ResumeScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildExperienceItem(
+  Widget _buildExperienceCard(
     BuildContext context,
     String position,
     String company,
     String duration,
     List<String> responsibilities,
   ) {
-    return Card(
+    return Container(
+      decoration: BoxDecoration(
+        color: Theme.of(context).cardColor,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: AppTheme.primaryColor.withOpacity(0.1),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
+        border: Border.all(
+          color: AppTheme.primaryColor.withOpacity(0.1),
+          width: 1,
+        ),
+      ),
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(24),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -211,53 +321,76 @@ class ResumeScreen extends StatelessWidget {
                     children: [
                       Text(
                         position,
-                        style: Theme.of(context).textTheme.headlineLarge
-                            ?.copyWith(fontWeight: FontWeight.bold),
+                        style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                          fontWeight: FontWeight.w700,
+                          color: Theme.of(context).colorScheme.onSurface,
+                        ),
                       ),
+                      const SizedBox(height: 4),
                       Text(
                         company,
-                        style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                          color: Theme.of(context).primaryColor,
-                        ),
+                        style: Theme.of(context).textTheme.titleMedium
+                            ?.copyWith(
+                              color: AppTheme.primaryColor,
+                              fontWeight: FontWeight.w600,
+                            ),
                       ),
                     ],
                   ),
                 ),
                 Container(
                   padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 6,
+                    horizontal: 16,
+                    vertical: 8,
                   ),
                   decoration: BoxDecoration(
-                    color: Theme.of(context).primaryColor.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(12),
+                    gradient: LinearGradient(
+                      colors: [
+                        AppTheme.primaryColor.withOpacity(0.1),
+                        AppTheme.accentColor.withOpacity(0.1),
+                      ],
+                    ),
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(
+                      color: AppTheme.primaryColor.withOpacity(0.3),
+                    ),
                   ),
                   child: Text(
                     duration,
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: Theme.of(context).primaryColor,
-                      fontWeight: FontWeight.w500,
+                      color: AppTheme.primaryColor,
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 20),
             ...responsibilities.map(
               (responsibility) => Padding(
-                padding: const EdgeInsets.only(bottom: 4),
+                padding: const EdgeInsets.only(bottom: 8),
                 child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Icon(
-                      Icons.check_circle,
-                      size: 16,
-                      color: Theme.of(context).primaryColor,
+                    Container(
+                      margin: const EdgeInsets.only(top: 6),
+                      width: 6,
+                      height: 6,
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [AppTheme.primaryColor, AppTheme.accentColor],
+                        ),
+                        shape: BoxShape.circle,
+                      ),
                     ),
-                    const SizedBox(width: 8),
+                    const SizedBox(width: 12),
                     Expanded(
                       child: Text(
                         responsibility,
-                        style: Theme.of(context).textTheme.bodyMedium,
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          height: 1.5,
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
+                        ),
                       ),
                     ),
                   ],
@@ -270,6 +403,33 @@ class ResumeScreen extends StatelessWidget {
     );
   }
 
+  Widget _buildEducationAndSkillsRow(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        if (constraints.maxWidth > 900) {
+          // Desktop layout - side by side
+          return Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(flex: 1, child: _buildEducationSection(context)),
+              const SizedBox(width: 32),
+              Expanded(flex: 2, child: _buildSkillsSection(context)),
+            ],
+          );
+        } else {
+          // Mobile layout - stacked
+          return Column(
+            children: [
+              _buildEducationSection(context),
+              const SizedBox(height: 32),
+              _buildSkillsSection(context),
+            ],
+          );
+        }
+      },
+    );
+  }
+
   Widget _buildEducationSection(BuildContext context) {
     return FadeInRight(
       duration: const Duration(milliseconds: 600),
@@ -277,48 +437,99 @@ class ResumeScreen extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'Education',
-            style: Theme.of(context).textTheme.displaySmall?.copyWith(
-              color: Theme.of(context).primaryColor,
-            ),
+          Row(
+            children: [
+              Container(
+                width: 4,
+                height: 24,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [AppTheme.secondaryColor, AppTheme.accentColor],
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                  ),
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              const SizedBox(width: 16),
+              Text(
+                'Education',
+                style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                  color: AppTheme.primaryColor,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ],
           ),
-          const SizedBox(height: 16),
-          Card(
+          const SizedBox(height: 20),
+          Container(
+            decoration: BoxDecoration(
+              color: Theme.of(context).cardColor,
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: [
+                BoxShadow(
+                  color: AppTheme.secondaryColor.withOpacity(0.1),
+                  blurRadius: 12,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+              border: Border.all(
+                color: AppTheme.secondaryColor.withOpacity(0.1),
+                width: 1,
+              ),
+            ),
             child: Padding(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.all(20),
               child: Row(
                 children: [
                   Container(
-                    padding: const EdgeInsets.all(12),
+                    padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: Theme.of(context).primaryColor.withOpacity(0.1),
+                      gradient: LinearGradient(
+                        colors: [
+                          AppTheme.secondaryColor.withOpacity(0.1),
+                          AppTheme.accentColor.withOpacity(0.1),
+                        ],
+                      ),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Icon(
-                      Icons.school,
-                      color: Theme.of(context).primaryColor,
+                      Icons.school_rounded,
+                      color: AppTheme.secondaryColor,
                       size: 32,
                     ),
                   ),
-                  const SizedBox(width: 16),
+                  const SizedBox(width: 20),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
                           AppConstants.education['degree']!,
-                          style: Theme.of(context).textTheme.headlineLarge
-                              ?.copyWith(fontWeight: FontWeight.bold),
+                          style: Theme.of(context).textTheme.titleLarge
+                              ?.copyWith(
+                                fontWeight: FontWeight.w700,
+                                color: Theme.of(context).colorScheme.onSurface,
+                              ),
                         ),
+                        const SizedBox(height: 4),
                         Text(
                           AppConstants.education['university']!,
-                          style: Theme.of(context).textTheme.bodyLarge
-                              ?.copyWith(color: Theme.of(context).primaryColor),
+                          style: Theme.of(context).textTheme.titleMedium
+                              ?.copyWith(
+                                color: AppTheme.secondaryColor,
+                                fontWeight: FontWeight.w600,
+                              ),
                         ),
+                        const SizedBox(height: 8),
                         Text(
                           '${AppConstants.education['duration']!} | GPA: ${AppConstants.education['gpa']!}',
-                          style: Theme.of(context).textTheme.bodyMedium,
+                          style: Theme.of(context).textTheme.bodyMedium
+                              ?.copyWith(
+                                color: Theme.of(
+                                  context,
+                                ).colorScheme.onSurfaceVariant,
+                              ),
                         ),
                       ],
                     ),
@@ -339,33 +550,51 @@ class ResumeScreen extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'Technical Skills',
-            style: Theme.of(context).textTheme.displaySmall?.copyWith(
-              color: Theme.of(context).primaryColor,
-            ),
+          Row(
+            children: [
+              Container(
+                width: 4,
+                height: 24,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [AppTheme.accentColor, AppTheme.primaryColor],
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                  ),
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              const SizedBox(width: 16),
+              Text(
+                'Technical Skills',
+                style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                  color: AppTheme.primaryColor,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ],
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 20),
           _buildSkillCategory(context, 'Programming Languages', [
             'PHP (5.5+ to 8.2+)',
             'Python (Django, Flask)',
             'JavaScript, HTML, CSS, jQuery',
             'Dart',
-          ]),
+          ], Icons.code_rounded),
           const SizedBox(height: 16),
           _buildSkillCategory(context, 'Frameworks & Platforms', [
             'Magento / E-commerce',
             'Flutter',
             'Django',
             'Flask',
-          ]),
+          ], Icons.web_rounded),
           const SizedBox(height: 16),
           _buildSkillCategory(context, 'Databases & Storage', [
             'MySQL',
             'MongoDB',
             'Redis',
             'Elasticsearch / Solr / OpenSearch',
-          ]),
+          ], Icons.storage_rounded),
           const SizedBox(height: 16),
           _buildSkillCategory(context, 'Cloud & DevOps', [
             'AWS (CloudFront, S3, EC2)',
@@ -373,7 +602,7 @@ class ResumeScreen extends StatelessWidget {
             'Docker, Kubernetes',
             'Jenkins',
             'CI/CD, Observability',
-          ]),
+          ], Icons.cloud_rounded),
         ],
       ),
     );
@@ -383,20 +612,55 @@ class ResumeScreen extends StatelessWidget {
     BuildContext context,
     String category,
     List<String> skills,
+    IconData icon,
   ) {
-    return Card(
+    return Container(
+      decoration: BoxDecoration(
+        color: Theme.of(context).cardColor,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: AppTheme.accentColor.withOpacity(0.1),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+        border: Border.all(
+          color: AppTheme.accentColor.withOpacity(0.1),
+          width: 1,
+        ),
+      ),
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              category,
-              style: Theme.of(
-                context,
-              ).textTheme.headlineLarge?.copyWith(fontWeight: FontWeight.bold),
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [
+                        AppTheme.accentColor.withOpacity(0.1),
+                        AppTheme.primaryColor.withOpacity(0.1),
+                      ],
+                    ),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Icon(icon, color: AppTheme.accentColor, size: 20),
+                ),
+                const SizedBox(width: 12),
+                Text(
+                  category,
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w700,
+                    color: Theme.of(context).colorScheme.onSurface,
+                  ),
+                ),
+              ],
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 16),
             Wrap(
               spacing: 8,
               runSpacing: 8,
@@ -405,21 +669,26 @@ class ResumeScreen extends StatelessWidget {
                     (skill) => Container(
                       padding: const EdgeInsets.symmetric(
                         horizontal: 12,
-                        vertical: 6,
+                        vertical: 8,
                       ),
                       decoration: BoxDecoration(
-                        color: Theme.of(context).primaryColor.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(16),
+                        gradient: LinearGradient(
+                          colors: [
+                            AppTheme.accentColor.withOpacity(0.1),
+                            AppTheme.primaryColor.withOpacity(0.05),
+                          ],
+                        ),
+                        borderRadius: BorderRadius.circular(20),
                         border: Border.all(
-                          color: Theme.of(
-                            context,
-                          ).primaryColor.withOpacity(0.3),
+                          color: AppTheme.accentColor.withOpacity(0.3),
+                          width: 1,
                         ),
                       ),
                       child: Text(
                         skill,
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: Theme.of(context).primaryColor,
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: AppTheme.accentColor,
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
                     ),
@@ -439,23 +708,50 @@ class ResumeScreen extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'Achievements & Certifications',
-            style: Theme.of(context).textTheme.displaySmall?.copyWith(
-              color: Theme.of(context).primaryColor,
-            ),
+          Row(
+            children: [
+              Container(
+                width: 4,
+                height: 24,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [AppTheme.successColor, AppTheme.accentColor],
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                  ),
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              const SizedBox(width: 16),
+              Text(
+                'Achievements & Certifications',
+                style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                  color: AppTheme.primaryColor,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ],
           ),
-          const SizedBox(height: 16),
-          ...AppConstants.achievements.map(
-            (achievement) => Padding(
-              padding: const EdgeInsets.only(bottom: 12),
-              child: _buildAchievementItem(
+          const SizedBox(height: 20),
+          GridView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: MediaQuery.of(context).size.width > 600 ? 2 : 1,
+              crossAxisSpacing: 16,
+              mainAxisSpacing: 16,
+              childAspectRatio: 3.5,
+            ),
+            itemCount: AppConstants.achievements.length,
+            itemBuilder: (context, index) {
+              final achievement = AppConstants.achievements[index];
+              return _buildAchievementItem(
                 context,
                 achievement['title'] as String,
                 achievement['description'] as String,
                 _getIconFromString(achievement['icon'] as String),
-              ),
-            ),
+              );
+            },
           ),
         ],
       ),
@@ -468,22 +764,38 @@ class ResumeScreen extends StatelessWidget {
     String description,
     IconData icon,
   ) {
-    return Card(
+    return Container(
+      decoration: BoxDecoration(
+        color: Theme.of(context).cardColor,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: AppTheme.successColor.withOpacity(0.1),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+        border: Border.all(
+          color: AppTheme.successColor.withOpacity(0.1),
+          width: 1,
+        ),
+      ),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Row(
           children: [
             Container(
-              padding: const EdgeInsets.all(8),
+              padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: Theme.of(context).primaryColor.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(8),
+                gradient: LinearGradient(
+                  colors: [
+                    AppTheme.successColor.withOpacity(0.1),
+                    AppTheme.accentColor.withOpacity(0.1),
+                  ],
+                ),
+                borderRadius: BorderRadius.circular(12),
               ),
-              child: Icon(
-                icon,
-                color: Theme.of(context).primaryColor,
-                size: 24,
-              ),
+              child: Icon(icon, color: AppTheme.successColor, size: 24),
             ),
             const SizedBox(width: 16),
             Expanded(
@@ -492,14 +804,17 @@ class ResumeScreen extends StatelessWidget {
                 children: [
                   Text(
                     title,
-                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                      fontWeight: FontWeight.bold,
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w700,
+                      color: Theme.of(context).colorScheme.onSurface,
                     ),
                   ),
+                  const SizedBox(height: 4),
                   Text(
                     description,
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: Theme.of(context).primaryColor,
+                      color: AppTheme.successColor,
+                      fontWeight: FontWeight.w500,
                     ),
                   ),
                 ],

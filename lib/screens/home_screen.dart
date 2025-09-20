@@ -17,7 +17,7 @@ class HomeScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final isTablet = ResponsiveBreakpoints.of(context).between(MOBILE, DESKTOP);
     final isMobile = ResponsiveBreakpoints.of(context).isMobile;
-    
+
     return Scaffold(
       extendBodyBehindAppBar: true,
       appBar: AppBar(
@@ -44,7 +44,9 @@ class HomeScreen extends StatelessWidget {
                   color: Theme.of(context).colorScheme.surface.withOpacity(0.9),
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(
-                    color: Theme.of(context).colorScheme.outline.withOpacity(0.2),
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.outline.withOpacity(0.2),
                   ),
                 ),
                 child: IconButton(
@@ -101,8 +103,8 @@ class HomeScreen extends StatelessWidget {
             vertical: 40,
           ),
           child: ResponsiveRowColumn(
-            layout: isMobile 
-                ? ResponsiveRowColumnType.COLUMN 
+            layout: isMobile
+                ? ResponsiveRowColumnType.COLUMN
                 : ResponsiveRowColumnType.ROW,
             children: [
               ResponsiveRowColumnItem(
@@ -127,7 +129,9 @@ class HomeScreen extends StatelessWidget {
         top: isMobile ? 0 : 60,
       ),
       child: Column(
-        crossAxisAlignment: isMobile ? CrossAxisAlignment.center : CrossAxisAlignment.start,
+        crossAxisAlignment: isMobile
+            ? CrossAxisAlignment.center
+            : CrossAxisAlignment.start,
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           FadeInUp(
@@ -159,7 +163,11 @@ class HomeScreen extends StatelessWidget {
               textAlign: isMobile ? TextAlign.center : TextAlign.left,
               text: TextSpan(
                 style: Theme.of(context).textTheme.displayMedium?.copyWith(
-                  fontSize: isMobile ? 32 : isTablet ? 40 : 48,
+                  fontSize: isMobile
+                      ? 32
+                      : isTablet
+                      ? 40
+                      : 48,
                   height: 1.1,
                   fontWeight: FontWeight.w800,
                 ),
@@ -169,7 +177,11 @@ class HomeScreen extends StatelessWidget {
                     text: AppConstants.name.split(' ').first,
                     style: TextStyle(
                       color: AppTheme.primaryColor,
-                      fontSize: isMobile ? 34 : isTablet ? 42 : 50,
+                      fontSize: isMobile
+                          ? 34
+                          : isTablet
+                          ? 42
+                          : 50,
                     ),
                   ),
                   const TextSpan(text: '\n'),
@@ -192,11 +204,12 @@ class HomeScreen extends StatelessWidget {
                     .map(
                       (title) => TypewriterAnimatedText(
                         title,
-                        textStyle: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                          color: AppTheme.secondaryColor,
-                          fontWeight: FontWeight.w600,
-                          fontSize: isMobile ? 20 : 24,
-                        ),
+                        textStyle: Theme.of(context).textTheme.headlineMedium
+                            ?.copyWith(
+                              color: AppTheme.secondaryColor,
+                              fontWeight: FontWeight.w600,
+                              fontSize: isMobile ? 20 : 24,
+                            ),
                         speed: const Duration(milliseconds: 100),
                       ),
                     )
@@ -216,7 +229,9 @@ class HomeScreen extends StatelessWidget {
               style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                 fontSize: 16,
                 height: 1.6,
-                color: Theme.of(context).colorScheme.onBackground.withOpacity(0.8),
+                color: Theme.of(
+                  context,
+                ).colorScheme.onBackground.withOpacity(0.8),
               ),
             ),
           ),
@@ -225,14 +240,19 @@ class HomeScreen extends StatelessWidget {
             duration: const Duration(milliseconds: 800),
             delay: const Duration(milliseconds: 800),
             child: Row(
-              mainAxisAlignment: isMobile ? MainAxisAlignment.center : MainAxisAlignment.start,
+              mainAxisAlignment: isMobile
+                  ? MainAxisAlignment.center
+                  : MainAxisAlignment.start,
               children: [
                 ElevatedButton.icon(
                   onPressed: () {},
                   icon: const Icon(Icons.download_rounded, size: 18),
                   label: const Text('Download CV'),
                   style: ElevatedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 32,
+                      vertical: 16,
+                    ),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
@@ -244,7 +264,10 @@ class HomeScreen extends StatelessWidget {
                   icon: const Icon(Icons.mail_outline_rounded, size: 18),
                   label: const Text('Contact Me'),
                   style: OutlinedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 32,
+                      vertical: 16,
+                    ),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
@@ -316,9 +339,9 @@ class HomeScreen extends StatelessWidget {
             duration: const Duration(milliseconds: 800),
             child: Text(
               'About Me',
-              style: Theme.of(context).textTheme.displaySmall?.copyWith(
-                fontWeight: FontWeight.w700,
-              ),
+              style: Theme.of(
+                context,
+              ).textTheme.displaySmall?.copyWith(fontWeight: FontWeight.w700),
               textAlign: TextAlign.center,
             ),
           ),
@@ -343,10 +366,9 @@ class HomeScreen extends StatelessWidget {
               constraints: const BoxConstraints(maxWidth: 800),
               child: Text(
                 'Passionate Technical Architect with ${AppConstants.experience.length}+ years of experience in creating robust, scalable applications. I specialize in modern web technologies and have a proven track record of delivering high-quality solutions for diverse clients.',
-                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                  fontSize: 18,
-                  height: 1.7,
-                ),
+                style: Theme.of(
+                  context,
+                ).textTheme.bodyLarge?.copyWith(fontSize: 18, height: 1.7),
                 textAlign: TextAlign.center,
               ),
             ),
@@ -371,9 +393,9 @@ class HomeScreen extends StatelessWidget {
             duration: const Duration(milliseconds: 800),
             child: Text(
               'Core Technologies',
-              style: Theme.of(context).textTheme.headlineLarge?.copyWith(
-                fontWeight: FontWeight.w700,
-              ),
+              style: Theme.of(
+                context,
+              ).textTheme.headlineLarge?.copyWith(fontWeight: FontWeight.w700),
               textAlign: TextAlign.center,
             ),
           ),
@@ -387,7 +409,10 @@ class HomeScreen extends StatelessWidget {
               alignment: WrapAlignment.center,
               children: AppConstants.skills.take(6).map((skill) {
                 return Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 24,
+                    vertical: 12,
+                  ),
                   decoration: BoxDecoration(
                     color: Theme.of(context).colorScheme.surface,
                     borderRadius: BorderRadius.circular(25),
@@ -430,10 +455,19 @@ class HomeScreen extends StatelessWidget {
 
   Widget _buildStatsSection(BuildContext context, bool isMobile) {
     final stats = [
-      {'number': '${AppConstants.experience.length}+', 'label': 'Years Experience'},
-      {'number': '${AppConstants.projects.length}+', 'label': 'Projects Completed'},
+      {
+        'number': '${AppConstants.experience.length}+',
+        'label': 'Years Experience',
+      },
+      {
+        'number': '${AppConstants.projects.length}+',
+        'label': 'Projects Completed',
+      },
       {'number': '${AppConstants.skills.length}+', 'label': 'Technologies'},
-      {'number': '${AppConstants.achievements.length}+', 'label': 'Achievements'},
+      {
+        'number': '${AppConstants.achievements.length}+',
+        'label': 'Achievements',
+      },
     ];
 
     return Container(
@@ -447,9 +481,9 @@ class HomeScreen extends StatelessWidget {
             duration: const Duration(milliseconds: 800),
             child: Text(
               'Professional Impact',
-              style: Theme.of(context).textTheme.headlineLarge?.copyWith(
-                fontWeight: FontWeight.w700,
-              ),
+              style: Theme.of(
+                context,
+              ).textTheme.headlineLarge?.copyWith(fontWeight: FontWeight.w700),
               textAlign: TextAlign.center,
             ),
           ),
@@ -458,8 +492,8 @@ class HomeScreen extends StatelessWidget {
             duration: const Duration(milliseconds: 800),
             delay: const Duration(milliseconds: 200),
             child: ResponsiveRowColumn(
-              layout: isMobile 
-                  ? ResponsiveRowColumnType.COLUMN 
+              layout: isMobile
+                  ? ResponsiveRowColumnType.COLUMN
                   : ResponsiveRowColumnType.ROW,
               children: stats.asMap().entries.map((entry) {
                 return ResponsiveRowColumnItem(
@@ -484,17 +518,17 @@ class HomeScreen extends StatelessWidget {
                       children: [
                         Text(
                           entry.value['number']!,
-                          style: Theme.of(context).textTheme.displayMedium?.copyWith(
-                            color: AppTheme.primaryColor,
-                            fontWeight: FontWeight.w800,
-                          ),
+                          style: Theme.of(context).textTheme.displayMedium
+                              ?.copyWith(
+                                color: AppTheme.primaryColor,
+                                fontWeight: FontWeight.w800,
+                              ),
                         ),
                         const SizedBox(height: 8),
                         Text(
                           entry.value['label']!,
-                          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                            fontWeight: FontWeight.w500,
-                          ),
+                          style: Theme.of(context).textTheme.titleMedium
+                              ?.copyWith(fontWeight: FontWeight.w500),
                           textAlign: TextAlign.center,
                         ),
                       ],

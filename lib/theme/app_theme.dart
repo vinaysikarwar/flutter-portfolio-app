@@ -11,13 +11,13 @@ class AppTheme {
   static const Color successColor = Color(0xFF4CAF50);
   static const Color warningColor = Color(0xFFFF9800);
   static const Color errorColor = Color(0xFFF44336);
-  
+
   // Light theme colors
   static const Color lightBackground = Color(0xFFFAFAFA);
   static const Color lightSurface = Color(0xFFFFFFFF);
   static const Color lightCardBackground = Color(0xFFFFFFFF);
   static const Color lightBorder = Color(0xFFE0E0E0);
-  
+
   // Dark theme colors
   static const Color darkBackground = Color(0xFF0A0A0A);
   static const Color darkSurface = Color(0xFF1C1C1E);
