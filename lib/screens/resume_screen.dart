@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:animate_do/animate_do.dart';
 import '../constants/app_constants.dart';
+import '../theme/app_theme.dart';
 
 class ResumeScreen extends StatelessWidget {
   const ResumeScreen({super.key});
@@ -9,30 +10,152 @@ class ResumeScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Resume'),
+        title: Text(
+          'Professional Resume',
+          style: Theme.of(context).textTheme.titleLarge?.copyWith(
+            fontWeight: FontWeight.w700,
+          ),
+        ),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.download),
-            onPressed: () {
-              // TODO: Implement PDF download
-            },
+          Container(
+            margin: const EdgeInsets.only(right: 16),
+            decoration: BoxDecoration(
+              color: AppTheme.primaryColor,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: IconButton(
+              icon: const Icon(Icons.download_rounded, color: Colors.white),
+              onPressed: () {
+                // TODO: Implement PDF download
+              },
+              tooltip: 'Download Resume',
+            ),
           ),
         ],
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildExperienceSection(context),
-            const SizedBox(height: 32),
-            _buildEducationSection(context),
-            const SizedBox(height: 32),
-            _buildSkillsSection(context),
-            const SizedBox(height: 32),
-            _buildAchievementsSection(context),
+            _buildProfileHeader(context),
+            _buildResumeContent(context),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildProfileHeader(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            AppTheme.primaryColor.withOpacity(0.1),
+            AppTheme.primaryLight.withOpacity(0.05),
+          ],
+        ),
+      ),
+      padding: const EdgeInsets.all(32),
+      child: Column(
+        children: [
+          FadeInDown(
+            duration: const Duration(milliseconds: 600),
+            child: CircleAvatar(
+              radius: 60,
+              backgroundColor: AppTheme.primaryColor,
+              child: Text(
+                AppConstants.name.split(' ').map((n) => n[0]).join(),
+                style: Theme.of(context).textTheme.displaySmall?.copyWith(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(height: 24),
+          FadeInUp(
+            duration: const Duration(milliseconds: 600),
+            delay: const Duration(milliseconds: 200),
+            child: Text(
+              AppConstants.name,
+              style: Theme.of(context).textTheme.displaySmall?.copyWith(
+                fontWeight: FontWeight.w700,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ),
+          const SizedBox(height: 8),
+          FadeInUp(
+            duration: const Duration(milliseconds: 600),
+            delay: const Duration(milliseconds: 300),
+            child: Text(
+              'Technical Architect',
+              style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                color: AppTheme.primaryColor,
+                fontWeight: FontWeight.w600,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ),
+          const SizedBox(height: 16),
+          FadeInUp(
+            duration: const Duration(milliseconds: 600),
+            delay: const Duration(milliseconds: 400),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                _buildContactInfo(
+                  context,
+                  Icons.email_outlined,
+                  AppConstants.email,
+                ),
+                const SizedBox(width: 24),
+                _buildContactInfo(
+                  context,
+                  Icons.phone_outlined,
+                  AppConstants.phone,
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildContactInfo(BuildContext context, IconData icon, String text) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(
+          icon,
+          size: 16,
+          color: AppTheme.primaryColor,
+        ),
+        const SizedBox(width: 8),
+        Text(
+          text,
+          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildResumeContent(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.all(24),
+      child: Column(
+        children: [
+          _buildExperienceSection(context),
+          const SizedBox(height: 48),
+          _buildEducationAndSkillsRow(context),
+          const SizedBox(height: 48),
+          _buildAchievementsSection(context),
+        ],
       ),
     );
   }
