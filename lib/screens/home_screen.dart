@@ -1,17 +1,43 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:animate_do/animate_do.dart';
 import 'package:animated_text_kit/animated_text_kit.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:responsive_framework/responsive_framework.dart';
-import '../constants/app_constants.dart';
 import '../theme/theme_controller.dart';
 import '../theme/app_theme.dart';
 import '../widgets/profile_avatar.dart';
+import '../widgets/data_state_widgets.dart';
+import '../widgets/expandable_text.dart';
+import '../services/portfolio_data_provider.dart';
+import '../models/profile.dart';
+import '../models/skill.dart';
+import '../models/portfolio_dashboard.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   final ThemeController? themeController;
 
   const HomeScreen({super.key, this.themeController});
+
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  @override
+  void initState() {
+    super.initState();
+    // Load data when screen initializes
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final dataProvider = Provider.of<PortfolioDataProvider>(
+        context,
+        listen: false,
+      );
+      dataProvider.loadProfile();
+      dataProvider.loadSkills();
+      dataProvider.loadDashboard();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -34,7 +60,7 @@ class HomeScreen extends StatelessWidget {
           ),
         ),
         actions: [
-          if (themeController != null)
+          if (widget.themeController != null)
             FadeInDown(
               duration: const Duration(milliseconds: 600),
               delay: const Duration(milliseconds: 200),
@@ -56,29 +82,48 @@ class HomeScreen extends StatelessWidget {
                         : Icons.dark_mode_rounded,
                     size: 20,
                   ),
-                  onPressed: themeController!.toggleTheme,
+                  onPressed: widget.themeController!.toggleTheme,
                 ),
               ),
             ),
         ],
       ),
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            _buildHeroSection(context, isMobile, isTablet),
-            _buildAboutSection(context, isMobile),
-            _buildSkillsSection(context, isMobile),
-            _buildStatsSection(context, isMobile),
-            const SizedBox(height: 40),
-          ],
-        ),
+      body: Consumer<PortfolioDataProvider>(
+        builder: (context, dataProvider, child) {
+          // Debug prints to see what data we have
+          print('🔍 Home Screen - Profile: ${dataProvider.profile?.name}');
+          print('🔍 Home Screen - Skills: ${dataProvider.skills?.length}');
+          print(
+            '🔍 Home Screen - Loading: Profile=${dataProvider.isLoadingProfile}, Skills=${dataProvider.isLoadingSkills}',
+          );
+          print(
+            '🔍 Home Screen - Errors: Profile=${dataProvider.profileError}, Skills=${dataProvider.skillsError}',
+          );
+
+          return SingleChildScrollView(
+            child: Column(
+              children: [
+                _buildHeroSection(context, isMobile, isTablet, dataProvider),
+                _buildAboutSection(context, isMobile, dataProvider),
+                _buildSkillsSection(context, isMobile, dataProvider),
+                _buildStatsSection(context, isMobile, dataProvider),
+                const SizedBox(height: 40),
+              ],
+            ),
+          );
+        },
       ),
     );
   }
 
-  Widget _buildHeroSection(BuildContext context, bool isMobile, bool isTablet) {
+  Widget _buildHeroSection(
+    BuildContext context,
+    bool isMobile,
+    bool isTablet,
+    PortfolioDataProvider dataProvider,
+  ) {
     return Container(
-      height: isMobile ? 600 : 700,
+      constraints: BoxConstraints(minHeight: isMobile ? 600 : 700),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topLeft,
@@ -109,7 +154,12 @@ class HomeScreen extends StatelessWidget {
             children: [
               ResponsiveRowColumnItem(
                 rowFlex: isMobile ? 0 : 1,
-                child: _buildHeroContent(context, isMobile, isTablet),
+                child: _buildHeroContent(
+                  context,
+                  isMobile,
+                  isTablet,
+                  dataProvider,
+                ),
               ),
               ResponsiveRowColumnItem(
                 rowFlex: isMobile ? 0 : 1,
@@ -122,161 +172,235 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildHeroContent(BuildContext context, bool isMobile, bool isTablet) {
-    return Container(
-      padding: EdgeInsets.only(
-        right: isMobile ? 0 : 40,
-        top: isMobile ? 0 : 60,
-      ),
-      child: Column(
-        crossAxisAlignment: isMobile
-            ? CrossAxisAlignment.center
-            : CrossAxisAlignment.start,
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          FadeInUp(
-            duration: const Duration(milliseconds: 800),
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              decoration: BoxDecoration(
-                color: AppTheme.primaryColor.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(20),
-                border: Border.all(
-                  color: AppTheme.primaryColor.withOpacity(0.3),
-                  width: 1,
+  Widget _buildHeroContent(
+    BuildContext context,
+    bool isMobile,
+    bool isTablet,
+    PortfolioDataProvider dataProvider,
+  ) {
+    return DataStateWidget<Profile>(
+      isLoading: dataProvider.isLoadingProfile,
+      error: dataProvider.profileError,
+      data: dataProvider.profile,
+      builder: (profile) => Container(
+        padding: EdgeInsets.only(
+          right: isMobile ? 0 : 40,
+          top: isMobile ? 0 : 60,
+        ),
+        child: Column(
+          crossAxisAlignment: isMobile
+              ? CrossAxisAlignment.center
+              : CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            FadeInUp(
+              duration: const Duration(milliseconds: 800),
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 8,
                 ),
-              ),
-              child: Text(
-                'Welcome to my portfolio',
-                style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                  color: AppTheme.primaryColor,
-                  fontWeight: FontWeight.w600,
+                decoration: BoxDecoration(
+                  color: AppTheme.primaryColor.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(
+                    color: AppTheme.primaryColor.withOpacity(0.3),
+                    width: 1,
+                  ),
+                ),
+                child: Text(
+                  'Welcome to my portfolio',
+                  style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                    color: AppTheme.primaryColor,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
               ),
             ),
-          ),
-          const SizedBox(height: 24),
-          FadeInUp(
-            duration: const Duration(milliseconds: 800),
-            delay: const Duration(milliseconds: 200),
-            child: RichText(
-              textAlign: isMobile ? TextAlign.center : TextAlign.left,
-              text: TextSpan(
-                style: Theme.of(context).textTheme.displayMedium?.copyWith(
-                  fontSize: isMobile
-                      ? 32
-                      : isTablet
-                      ? 40
-                      : 48,
-                  height: 1.1,
-                  fontWeight: FontWeight.w800,
+            const SizedBox(height: 24),
+            FadeInUp(
+              duration: const Duration(milliseconds: 800),
+              delay: const Duration(milliseconds: 200),
+              child: RichText(
+                textAlign: isMobile ? TextAlign.center : TextAlign.left,
+                text: TextSpan(
+                  style: Theme.of(context).textTheme.displayMedium?.copyWith(
+                    fontSize: isMobile
+                        ? 32
+                        : isTablet
+                        ? 40
+                        : 48,
+                    height: 1.1,
+                    fontWeight: FontWeight.w800,
+                  ),
+                  children: [
+                    const TextSpan(text: 'Hi, I\'m '),
+                    TextSpan(
+                      text: profile.firstName,
+                      style: TextStyle(
+                        color: AppTheme.primaryColor,
+                        fontSize: isMobile
+                            ? 34
+                            : isTablet
+                            ? 42
+                            : 50,
+                      ),
+                    ),
+                    const TextSpan(text: '\n'),
+                    TextSpan(
+                      text: profile.lastName,
+                      style: const TextStyle(fontWeight: FontWeight.w300),
+                    ),
+                  ],
                 ),
+              ),
+            ),
+            const SizedBox(height: 20),
+            FadeInUp(
+              duration: const Duration(milliseconds: 800),
+              delay: const Duration(milliseconds: 400),
+              child: SizedBox(
+                height: isMobile ? 60 : 70,
+                child: AnimatedTextKit(
+                  animatedTexts: profile.animatedTitles
+                      .map(
+                        (title) => TypewriterAnimatedText(
+                          title,
+                          textStyle: Theme.of(context).textTheme.headlineMedium
+                              ?.copyWith(
+                                color: AppTheme.secondaryColor,
+                                fontWeight: FontWeight.w600,
+                                fontSize: isMobile ? 20 : 24,
+                              ),
+                          speed: const Duration(milliseconds: 100),
+                        ),
+                      )
+                      .toList(),
+                  repeatForever: true,
+                  pause: const Duration(milliseconds: 1000),
+                ),
+              ),
+            ),
+            const SizedBox(height: 32),
+            FadeInUp(
+              duration: const Duration(milliseconds: 800),
+              delay: const Duration(milliseconds: 600),
+              child: ExpandableText(
+                profile.bio,
+                maxLines: isMobile ? 5 : 6,
+                textAlign: isMobile ? TextAlign.center : TextAlign.left,
+                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                  fontSize: 16,
+                  height: 1.6,
+                  color: Theme.of(
+                    context,
+                  ).colorScheme.onBackground.withOpacity(0.8),
+                ),
+              ),
+            ),
+            const SizedBox(height: 40),
+            FadeInUp(
+              duration: const Duration(milliseconds: 800),
+              delay: const Duration(milliseconds: 800),
+              child: Row(
+                mainAxisAlignment: isMobile
+                    ? MainAxisAlignment.center
+                    : MainAxisAlignment.start,
                 children: [
-                  const TextSpan(text: 'Hi, I\'m '),
-                  TextSpan(
-                    text: AppConstants.name.split(' ').first,
-                    style: TextStyle(
-                      color: AppTheme.primaryColor,
-                      fontSize: isMobile
-                          ? 34
-                          : isTablet
-                          ? 42
-                          : 50,
+                  ElevatedButton.icon(
+                    onPressed: profile.resumeUrl != null
+                        ? () {
+                            // TODO: Download CV functionality
+                          }
+                        : null,
+                    icon: const Icon(Icons.download_rounded, size: 18),
+                    label: const Text('Download CV'),
+                    style: ElevatedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 32,
+                        vertical: 16,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
                     ),
                   ),
-                  const TextSpan(text: '\n'),
-                  TextSpan(
-                    text: AppConstants.name.split(' ').last,
-                    style: const TextStyle(fontWeight: FontWeight.w300),
+                  const SizedBox(width: 16),
+                  OutlinedButton.icon(
+                    onPressed: () {
+                      // TODO: Navigate to contact page
+                    },
+                    icon: const Icon(Icons.mail_outline_rounded, size: 18),
+                    label: const Text('Contact Me'),
+                    style: OutlinedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 32,
+                        vertical: 16,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
                   ),
                 ],
               ),
             ),
-          ),
-          const SizedBox(height: 20),
-          FadeInUp(
-            duration: const Duration(milliseconds: 800),
-            delay: const Duration(milliseconds: 400),
-            child: SizedBox(
-              height: isMobile ? 60 : 70,
-              child: AnimatedTextKit(
-                animatedTexts: AppConstants.animatedTitles
-                    .map(
-                      (title) => TypewriterAnimatedText(
-                        title,
-                        textStyle: Theme.of(context).textTheme.headlineMedium
-                            ?.copyWith(
-                              color: AppTheme.secondaryColor,
-                              fontWeight: FontWeight.w600,
-                              fontSize: isMobile ? 20 : 24,
-                            ),
-                        speed: const Duration(milliseconds: 100),
-                      ),
-                    )
-                    .toList(),
-                repeatForever: true,
-                pause: const Duration(milliseconds: 1000),
+          ],
+        ),
+      ),
+      loadingWidget: Container(
+        padding: EdgeInsets.only(
+          right: isMobile ? 0 : 40,
+          top: isMobile ? 0 : 60,
+        ),
+        child: Column(
+          crossAxisAlignment: isMobile
+              ? CrossAxisAlignment.center
+              : CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            // Skeleton loading widgets
+            Container(
+              height: 40,
+              width: 200,
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(20),
               ),
             ),
-          ),
-          const SizedBox(height: 32),
-          FadeInUp(
-            duration: const Duration(milliseconds: 800),
-            delay: const Duration(milliseconds: 600),
-            child: Text(
-              AppConstants.bio,
-              textAlign: isMobile ? TextAlign.center : TextAlign.left,
-              style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                fontSize: 16,
-                height: 1.6,
+            const SizedBox(height: 24),
+            Container(
+              height: isMobile ? 64 : 96,
+              width: double.infinity,
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+            const SizedBox(height: 20),
+            Container(
+              height: isMobile ? 60 : 70,
+              width: 250,
+              decoration: BoxDecoration(
                 color: Theme.of(
                   context,
-                ).colorScheme.onBackground.withOpacity(0.8),
+                ).colorScheme.onSurface.withOpacity(0.05),
+                borderRadius: BorderRadius.circular(8),
               ),
             ),
-          ),
-          const SizedBox(height: 40),
-          FadeInUp(
-            duration: const Duration(milliseconds: 800),
-            delay: const Duration(milliseconds: 800),
-            child: Row(
-              mainAxisAlignment: isMobile
-                  ? MainAxisAlignment.center
-                  : MainAxisAlignment.start,
-              children: [
-                ElevatedButton.icon(
-                  onPressed: () {},
-                  icon: const Icon(Icons.download_rounded, size: 18),
-                  label: const Text('Download CV'),
-                  style: ElevatedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 32,
-                      vertical: 16,
-                    ),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 16),
-                OutlinedButton.icon(
-                  onPressed: () {},
-                  icon: const Icon(Icons.mail_outline_rounded, size: 18),
-                  label: const Text('Contact Me'),
-                  style: OutlinedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 32,
-                      vertical: 16,
-                    ),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                ),
-              ],
+            const SizedBox(height: 32),
+            Container(
+              height: 80,
+              width: double.infinity,
+              decoration: BoxDecoration(
+                color: Theme.of(
+                  context,
+                ).colorScheme.onSurface.withOpacity(0.05),
+                borderRadius: BorderRadius.circular(8),
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -327,7 +451,11 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildAboutSection(BuildContext context, bool isMobile) {
+  Widget _buildAboutSection(
+    BuildContext context,
+    bool isMobile,
+    PortfolioDataProvider dataProvider,
+  ) {
     return Container(
       padding: EdgeInsets.symmetric(
         horizontal: isMobile ? 24 : 48,
@@ -335,16 +463,6 @@ class HomeScreen extends StatelessWidget {
       ),
       child: Column(
         children: [
-          FadeInUp(
-            duration: const Duration(milliseconds: 800),
-            child: Text(
-              'About Me',
-              style: Theme.of(
-                context,
-              ).textTheme.displaySmall?.copyWith(fontWeight: FontWeight.w700),
-              textAlign: TextAlign.center,
-            ),
-          ),
           const SizedBox(height: 16),
           FadeInUp(
             duration: const Duration(milliseconds: 800),
@@ -358,27 +476,16 @@ class HomeScreen extends StatelessWidget {
               ),
             ),
           ),
-          const SizedBox(height: 40),
-          FadeInUp(
-            duration: const Duration(milliseconds: 800),
-            delay: const Duration(milliseconds: 400),
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 800),
-              child: Text(
-                'Passionate Technical Architect with ${AppConstants.experience.length}+ years of experience in creating robust, scalable applications. I specialize in modern web technologies and have a proven track record of delivering high-quality solutions for diverse clients.',
-                style: Theme.of(
-                  context,
-                ).textTheme.bodyLarge?.copyWith(fontSize: 18, height: 1.7),
-                textAlign: TextAlign.center,
-              ),
-            ),
-          ),
         ],
       ),
     );
   }
 
-  Widget _buildSkillsSection(BuildContext context, bool isMobile) {
+  Widget _buildSkillsSection(
+    BuildContext context,
+    bool isMobile,
+    PortfolioDataProvider dataProvider,
+  ) {
     return Container(
       padding: EdgeInsets.symmetric(
         horizontal: isMobile ? 24 : 48,
@@ -400,52 +507,83 @@ class HomeScreen extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 40),
-          FadeInUp(
-            duration: const Duration(milliseconds: 800),
-            delay: const Duration(milliseconds: 200),
-            child: Wrap(
-              spacing: 16,
-              runSpacing: 16,
-              alignment: WrapAlignment.center,
-              children: AppConstants.skills.take(6).map((skill) {
-                return Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 24,
-                    vertical: 12,
-                  ),
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.surface,
-                    borderRadius: BorderRadius.circular(25),
-                    border: Border.all(
-                      color: AppTheme.primaryColor.withOpacity(0.3),
+          DataStateWidget<List<Skill>>(
+            isLoading: dataProvider.isLoadingSkills,
+            error: dataProvider.skillsError,
+            data: dataProvider.skills,
+            isEmpty: dataProvider.skills?.isEmpty ?? true,
+            builder: (skills) => FadeInUp(
+              duration: const Duration(milliseconds: 800),
+              delay: const Duration(milliseconds: 200),
+              child: Wrap(
+                spacing: 16,
+                runSpacing: 16,
+                alignment: WrapAlignment.center,
+                children: skills.take(8).map((skill) {
+                  return Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 24,
+                      vertical: 12,
                     ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: AppTheme.primaryColor.withOpacity(0.1),
-                        blurRadius: 10,
-                        spreadRadius: 2,
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).colorScheme.surface,
+                      borderRadius: BorderRadius.circular(25),
+                      border: Border.all(
+                        color: AppTheme.primaryColor.withOpacity(0.3),
                       ),
-                    ],
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(
-                        FontAwesomeIcons.code,
-                        size: 16,
-                        color: AppTheme.primaryColor,
-                      ),
-                      const SizedBox(width: 8),
-                      Text(
-                        skill['name'],
-                        style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                          fontWeight: FontWeight.w600,
+                      boxShadow: [
+                        BoxShadow(
+                          color: AppTheme.primaryColor.withOpacity(0.1),
+                          blurRadius: 10,
+                          spreadRadius: 2,
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          FontAwesomeIcons.code,
+                          size: 16,
+                          color: AppTheme.primaryColor,
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          skill.name,
+                          style: Theme.of(context).textTheme.labelLarge
+                              ?.copyWith(fontWeight: FontWeight.w600),
+                        ),
+                      ],
+                    ),
+                  );
+                }).toList(),
+              ),
+            ),
+            loadingWidget: FadeInUp(
+              duration: const Duration(milliseconds: 800),
+              delay: const Duration(milliseconds: 200),
+              child: Wrap(
+                spacing: 16,
+                runSpacing: 16,
+                alignment: WrapAlignment.center,
+                children: List.generate(
+                  6,
+                  (index) => Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 24,
+                      vertical: 12,
+                    ),
+                    height: 40,
+                    width: 120,
+                    decoration: BoxDecoration(
+                      color: Theme.of(
+                        context,
+                      ).colorScheme.onSurface.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(25),
+                    ),
                   ),
-                );
-              }).toList(),
+                ),
+              ),
             ),
           ),
         ],
@@ -453,23 +591,11 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildStatsSection(BuildContext context, bool isMobile) {
-    final stats = [
-      {
-        'number': '${AppConstants.experience.length}+',
-        'label': 'Years Experience',
-      },
-      {
-        'number': '${AppConstants.projects.length}+',
-        'label': 'Projects Completed',
-      },
-      {'number': '${AppConstants.skills.length}+', 'label': 'Technologies'},
-      {
-        'number': '${AppConstants.achievements.length}+',
-        'label': 'Achievements',
-      },
-    ];
-
+  Widget _buildStatsSection(
+    BuildContext context,
+    bool isMobile,
+    PortfolioDataProvider dataProvider,
+  ) {
     return Container(
       padding: EdgeInsets.symmetric(
         horizontal: isMobile ? 24 : 48,
@@ -488,57 +614,123 @@ class HomeScreen extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 50),
-          FadeInUp(
-            duration: const Duration(milliseconds: 800),
-            delay: const Duration(milliseconds: 200),
-            child: ResponsiveRowColumn(
-              layout: isMobile
-                  ? ResponsiveRowColumnType.COLUMN
-                  : ResponsiveRowColumnType.ROW,
-              children: stats.asMap().entries.map((entry) {
-                return ResponsiveRowColumnItem(
-                  child: Container(
-                    margin: EdgeInsets.symmetric(
-                      vertical: isMobile ? 12 : 0,
-                      horizontal: isMobile ? 0 : 12,
-                    ),
-                    padding: const EdgeInsets.all(32),
-                    decoration: BoxDecoration(
-                      color: Theme.of(context).colorScheme.surface,
-                      borderRadius: BorderRadius.circular(16),
-                      boxShadow: [
-                        BoxShadow(
-                          color: AppTheme.primaryColor.withOpacity(0.1),
-                          blurRadius: 20,
-                          spreadRadius: 5,
-                        ),
-                      ],
-                    ),
-                    child: Column(
-                      children: [
-                        Text(
-                          entry.value['number']!,
-                          style: Theme.of(context).textTheme.displayMedium
-                              ?.copyWith(
-                                color: AppTheme.primaryColor,
-                                fontWeight: FontWeight.w800,
-                              ),
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          entry.value['label']!,
-                          style: Theme.of(context).textTheme.titleMedium
-                              ?.copyWith(fontWeight: FontWeight.w500),
-                          textAlign: TextAlign.center,
-                        ),
-                      ],
+          DataStateWidget<PortfolioDashboard>(
+            isLoading: dataProvider.isLoadingDashboard,
+            error: dataProvider.dashboardError,
+            data: dataProvider.dashboard,
+            builder: (dashboard) => FadeInUp(
+              duration: const Duration(milliseconds: 800),
+              delay: const Duration(milliseconds: 200),
+              child: ResponsiveRowColumn(
+                layout: isMobile
+                    ? ResponsiveRowColumnType.COLUMN
+                    : ResponsiveRowColumnType.ROW,
+                children: [
+                  _buildStatItem(
+                    context,
+                    isMobile,
+                    '${dashboard.yearsExperience}+',
+                    'Years Experience',
+                  ),
+                  _buildStatItem(
+                    context,
+                    isMobile,
+                    '${dashboard.totalProjects}+',
+                    'Projects Completed',
+                  ),
+                  _buildStatItem(
+                    context,
+                    isMobile,
+                    '${dashboard.totalSkills}+',
+                    'Technologies',
+                  ),
+                  _buildStatItem(
+                    context,
+                    isMobile,
+                    '${dashboard.totalExperience}+',
+                    'Companies Worked',
+                  ),
+                ],
+              ),
+            ),
+            loadingWidget: FadeInUp(
+              duration: const Duration(milliseconds: 800),
+              delay: const Duration(milliseconds: 200),
+              child: ResponsiveRowColumn(
+                layout: isMobile
+                    ? ResponsiveRowColumnType.COLUMN
+                    : ResponsiveRowColumnType.ROW,
+                children: List.generate(
+                  4,
+                  (index) => ResponsiveRowColumnItem(
+                    child: Container(
+                      margin: EdgeInsets.symmetric(
+                        vertical: isMobile ? 12 : 0,
+                        horizontal: isMobile ? 0 : 12,
+                      ),
+                      padding: const EdgeInsets.all(32),
+                      height: 120,
+                      decoration: BoxDecoration(
+                        color: Theme.of(
+                          context,
+                        ).colorScheme.onSurface.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(16),
+                      ),
                     ),
                   ),
-                );
-              }).toList(),
+                ),
+              ),
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  ResponsiveRowColumnItem _buildStatItem(
+    BuildContext context,
+    bool isMobile,
+    String number,
+    String label,
+  ) {
+    return ResponsiveRowColumnItem(
+      child: Container(
+        margin: EdgeInsets.symmetric(
+          vertical: isMobile ? 12 : 0,
+          horizontal: isMobile ? 0 : 12,
+        ),
+        padding: const EdgeInsets.all(32),
+        decoration: BoxDecoration(
+          color: Theme.of(context).colorScheme.surface,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: AppTheme.primaryColor.withOpacity(0.1),
+              blurRadius: 20,
+              spreadRadius: 5,
+            ),
+          ],
+        ),
+        child: Column(
+          children: [
+            Text(
+              number,
+              style: Theme.of(context).textTheme.displaySmall?.copyWith(
+                color: AppTheme.primaryColor,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              label,
+              style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                fontWeight: FontWeight.w600,
+                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
       ),
     );
   }

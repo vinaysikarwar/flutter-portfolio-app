@@ -40,7 +40,7 @@ class AppConstants {
   // Experience
   static const List<Map<String, dynamic>> experience = [
     {
-      'position': 'Technical Architect',
+      'position': 'Technical Architect1',
       'company': 'Group Bayport',
       'duration': 'Dec 2022 – Present',
       'responsibilities': [
